@@ -614,11 +614,12 @@ class TestH5Node(TestCaseQt):
         h5["group/dataset"] = 50
         h5["link/soft_link"] = h5py.SoftLink("/group/dataset")
         h5["link/soft_link_to_group"] = h5py.SoftLink("/group")
-        h5["link/soft_link_to_link"] = h5py.SoftLink("/link/soft_link")
+        h5["link/soft_link_to_soft_link"] = h5py.SoftLink("/link/soft_link")
+        h5["link/soft_link_to_external_link"] = h5py.SoftLink("/link/external_link")
         h5["link/soft_link_to_file"] = h5py.SoftLink("/")
         h5["group/soft_link_relative"] = h5py.SoftLink("dataset")
         h5["link/external_link"] = h5py.ExternalLink(externalFilename, "/target/dataset")
-        h5["link/external_link_to_link"] = h5py.ExternalLink(externalFilename, "/target/link")
+        h5["link/external_link_to_soft_link"] = h5py.ExternalLink(externalFilename, "/target/link")
         h5["broken_link/external_broken_file"] = h5py.ExternalLink(externalFilename + "_not_exists", "/target/link")
         h5["broken_link/external_broken_link"] = h5py.ExternalLink(externalFilename, "/target/not_exists")
         h5["broken_link/soft_broken_link"] = h5py.SoftLink("/group/not_exists")
@@ -708,16 +709,28 @@ class TestH5Node(TestCaseQt):
         self.assertEqual(h5node.local_basename, "soft_link")
         self.assertEqual(h5node.local_name, "/link/soft_link")
 
-    def testSoftLinkToLink(self):
-        path = ["base.h5", "link", "soft_link_to_link"]
+    def testSoftLinkToSoftLink(self):
+        path = ["base.h5", "link", "soft_link_to_soft_link"]
         h5node = self.getH5NodeFromPath(self.model, path)
 
         self.assertEqual(h5node.physical_filename, h5node.local_filename)
         self.assertIn("base.h5", h5node.physical_filename)
         self.assertEqual(h5node.physical_basename, "dataset")
         self.assertEqual(h5node.physical_name, "/group/dataset")
-        self.assertEqual(h5node.local_basename, "soft_link_to_link")
-        self.assertEqual(h5node.local_name, "/link/soft_link_to_link")
+        self.assertEqual(h5node.local_basename, "soft_link_to_soft_link")
+        self.assertEqual(h5node.local_name, "/link/soft_link_to_soft_link")
+
+    def testSoftLinkToExternalLink(self):
+        path = ["base.h5", "link", "soft_link_to_external_link"]
+        h5node = self.getH5NodeFromPath(self.model, path)
+
+        self.assertNotEqual(h5node.physical_filename, h5node.local_filename)
+        self.assertIn("base.h5", h5node.local_filename)
+        self.assertIn("base__external.h5", h5node.physical_filename)
+        self.assertEqual(h5node.physical_basename, "dataset")
+        self.assertEqual(h5node.physical_name, "/target/dataset")
+        self.assertEqual(h5node.local_basename, "soft_link_to_external_link")
+        self.assertEqual(h5node.local_name, "/link/soft_link_to_external_link")
 
     def testSoftLinkRelative(self):
         path = ["base.h5", "group", "soft_link_relative"]
@@ -742,19 +755,18 @@ class TestH5Node(TestCaseQt):
         self.assertEqual(h5node.local_basename, "external_link")
         self.assertEqual(h5node.local_name, "/link/external_link")
 
-    def testExternalLinkToLink(self):
-        path = ["base.h5", "link", "external_link_to_link"]
+    def testExternalLinkToSoftLink(self):
+        path = ["base.h5", "link", "external_link_to_soft_link"]
         h5node = self.getH5NodeFromPath(self.model, path)
 
         self.assertNotEqual(h5node.physical_filename, h5node.local_filename)
         self.assertIn("base.h5", h5node.local_filename)
         self.assertIn("base__external.h5", h5node.physical_filename)
-
         self.assertNotEqual(h5node.physical_filename, h5node.local_filename)
         self.assertEqual(h5node.physical_basename, "dataset")
         self.assertEqual(h5node.physical_name, "/target/dataset")
-        self.assertEqual(h5node.local_basename, "external_link_to_link")
-        self.assertEqual(h5node.local_name, "/link/external_link_to_link")
+        self.assertEqual(h5node.local_basename, "external_link_to_soft_link")
+        self.assertEqual(h5node.local_name, "/link/external_link_to_soft_link")
 
     def testExternalBrokenFile(self):
         path = ["base.h5", "broken_link", "external_broken_file"]
