@@ -1355,7 +1355,7 @@ THEORY = dict((
                   estimate=fitfuns.estimate_splitpvoigt,
                   configure=fitfuns.configure)),
     ('Split Pseudo-Voigt 2',
-        FitTheory(description='Asymmetric pseudo-Voigt functions',
+        FitTheory(description='Asymmetric pseudo-Voigt functions with split Lorentzian fraction',
                   function=functions.sum_splitpvoigt2,
                   parameters=('Height', 'Position', 'LowFWHM',
                               'HighFWHM', 'LowEta', 'HighEta'),
